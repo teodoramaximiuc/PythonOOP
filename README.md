@@ -1,6 +1,6 @@
 # Math Microservice (FastAPI + Oracle + JWT)
 
-This project implements a production-ready microservice for solving basic mathematical operations via a REST API. It includes secure user authentication, logging to a database, and is container-ready for deployment.
+This project implements a production-ready microservice for solving basic mathematical operations via a REST API. It includes secure user authentication, logging to a database, and is container-ready for deployment. The client side was done using the click python library (Command Line Interface).
 
 ---
 
@@ -18,7 +18,7 @@ This project implements a production-ready microservice for solving basic mathem
 
 ## API Endpoints
 
-### 🔹 `GET /pow/base={base}&exponent={exponent}`
+### `GET /pow/base={base}&exponent={exponent}`
 
 **Description:**  
 Computes the result of `base` raised to the power of `exponent`.
@@ -30,9 +30,9 @@ Computes the result of `base` raised to the power of `exponent`.
 **Example:**
 GET /pow/base=2&exponent=5
 Response: { "pow": 32.0 }
----
 
-### 🔹 `GET /n-th_fibonacci/{n}`
+
+### `GET /n-th_fibonacci/{n}`
 
 **Description:**  
 Returns the `n`-th Fibonacci number (0-based index).
@@ -44,7 +44,7 @@ Returns the `n`-th Fibonacci number (0-based index).
 GET /n-th_fibonacci/7
 Response: { "n-th_fibonacci": 13 }
 
-### 🔹 `GET /factorial/{n}`
+### `GET /factorial/{n}`
 
 **Description:**  
 Calculates the factorial of `n`.
@@ -57,7 +57,6 @@ GET /factorial/5
 Response: { "factorial": 120 }
 
 **Note:** Returns HTTP 400 for negative values.
----
 
 ### `GET /file/{file_name}`
 
