@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 TOKEN_FILE = ".mycli_token"
 @click.group()
 def cli():
-    """CLI pentru operații matematice (pow, fibonacci, factorial)"""
     pass
 def save_token(token):
     with open(TOKEN_FILE, "w") as f:

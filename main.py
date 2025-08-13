@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from confluent_kafka import Producer
 from fastapi import Header, Depends
 from jose import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import numpy as np
 import oracledb
 import os
@@ -133,7 +133,8 @@ async def login(user: User):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
     if verify_password(user.password, row[2]):
-        expire = datetime.utcnow() + timedelta(minutes=30)
+        now = datetime.now(timezone.utc)
+        expire = now + timedelta(minutes=30)
         token = jwt.encode({"sub": user.name, "exp": expire}, SECRET_KEY, algorithm=ALGORITHM)
         return Token(access_token=token, token_type="bearer")
     raise HTTPException(status_code=401, detail="Invalid username or password")

@@ -2,6 +2,10 @@
 
 This project implements a production-ready microservice for solving basic mathematical operations via a REST API. It includes secure user authentication, logging to a database, and is container-ready for deployment. The client side was done using the click python library (Command Line Interface).
 
+<p align="center">
+  <img src="click-terminal.png" alt="CLI demo using Click" width="85%">
+</p>
+
 ---
 
 ## Features
@@ -14,6 +18,24 @@ This project implements a production-ready microservice for solving basic mathem
 - JWT-based user authentication (`/signup`, `/login`, `/logout`), for each user a token is saved for authorization
 - Logs all requests to an Oracle database (`cliusers_audit`) with request id, user id, action and timestamp
 - Passwords are hashed with SHA-256 for increased security
+
+### Database snapshots
+
+The service persists users and an audit trail of all operations:
+
+<p align="center">
+  <img src="cliusers.png" alt="cliusers table with registered users" width="45%">
+  &nbsp;&nbsp;
+  <img src="cliusers_audit.png" alt="cliusers_audit table with user actions" width="45%">
+</p>
+
+### Streaming audit events to Kafka
+
+Each successful request also emits an audit event to Kafka (topic: `cliusers_audit`) for downstream processing/monitoring.
+
+<p align="center">
+  <img src="Kafka.png" alt="Kafka topic and tooling snapshot" width="85%">
+</p>
 ---
 
 ## API Endpoints
