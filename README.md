@@ -79,8 +79,6 @@ Calculates the factorial of `n`.
 GET /factorial/5
 Response: { "factorial": 120 }
 
-**Note:** Returns HTTP 400 for negative values.
-
 ### `GET /file/{file_name}`
 
 **Description:**  
