@@ -29,6 +29,7 @@ The service persists users and an audit trail of all operations:
 <p align="center">
   <img src="SCREENS/CLIUSERS_AUDIT.png" alt="cliusers_audit table with user actions" width="90%">
 </p>
+
 ### Streaming audit events to Kafka
 
 Each successful request also emits an audit event to Kafka (topic: `cliusers_audit`) for downstream processing/monitoring.
