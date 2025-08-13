@@ -3,7 +3,7 @@
 This project implements a production-ready microservice for solving basic mathematical operations via a REST API. It includes secure user authentication, logging to a database, and is container-ready for deployment. The client side was done using the click python library (Command Line Interface).
 
 <p align="center">
-  <img src="click-terminal.png" alt="CLI demo using Click" width="85%">
+  <img src="SCREENS/click-terminal.png" alt="CLI demo using Click" width="85%">
 </p>
 
 ---
@@ -24,9 +24,9 @@ This project implements a production-ready microservice for solving basic mathem
 The service persists users and an audit trail of all operations:
 
 <p align="center">
-  <img src="cliusers.png" alt="cliusers table with registered users" width="45%">
+  <img src="SCREENS/CLIUSERS.png" alt="cliusers table with registered users" width="45%">
   &nbsp;&nbsp;
-  <img src="cliusers_audit.png" alt="cliusers_audit table with user actions" width="45%">
+  <img src="SCREENS/CLIUSERS_AUDIT.png" alt="cliusers_audit table with user actions" width="45%">
 </p>
 
 ### Streaming audit events to Kafka
@@ -34,7 +34,7 @@ The service persists users and an audit trail of all operations:
 Each successful request also emits an audit event to Kafka (topic: `cliusers_audit`) for downstream processing/monitoring.
 
 <p align="center">
-  <img src="Kafka.png" alt="Kafka topic and tooling snapshot" width="85%">
+  <img src="SCREENS/Kafka.png" alt="Kafka topic and tooling snapshot" width="85%">
 </p>
 ---
 
