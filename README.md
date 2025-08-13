@@ -6,6 +6,10 @@ This project implements a production-ready microservice for solving basic mathem
   <img src="SCREENS/click-terminal.png" alt="CLI demo using Click" width="85%">
 </p>
 
+<p align="center">
+  <img src="SCREENS/Docker.png" alt="CLI demo using Click" width="85%">
+</p>
+
 ---
 
 ## Features
