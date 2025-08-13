@@ -24,11 +24,11 @@ This project implements a production-ready microservice for solving basic mathem
 The service persists users and an audit trail of all operations:
 
 <p align="center">
-  <img src="SCREENS/CLIUSERS.png" alt="cliusers table with registered users" width="45%">
-  &nbsp;&nbsp;
+  <img src="SCREENS/CLIUSERS.png" alt="cliusers table with registered users" width="100%">
+</p>
+<p align="center">
   <img src="SCREENS/CLIUSERS_AUDIT.png" alt="cliusers_audit table with user actions" width="45%">
 </p>
-
 ### Streaming audit events to Kafka
 
 Each successful request also emits an audit event to Kafka (topic: `cliusers_audit`) for downstream processing/monitoring.
