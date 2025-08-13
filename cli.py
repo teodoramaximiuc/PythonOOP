@@ -10,12 +10,12 @@ def cli():
     pass
 def save_token(token):
     with open(TOKEN_FILE, "w") as f:
-        f.write(token)
+        f.write(token.strip())
 def load_token():
     if not os.path.exists(TOKEN_FILE):
         return None
     with open(TOKEN_FILE, "r") as f:
-        return f.read()
+        return f.read().strip()
 
 def get_auth_headers():
     token = load_token()
@@ -52,9 +52,10 @@ def fibonacci(fibonacci_number):
 @click.argument('exponent', type=float)
 def pow(base, exponent):
     if base > 100 or exponent > 100:
-        click.echo("Error: Base and exponent must be less than or equal to 100.")
+        click.echo("Error: Base and exponent must be <= 100.")
         sys.exit(1)
-    response = requests.get(f"http://127.0.0.1:8000/pow/base={base}&exponent={exponent}", headers=get_auth_headers())
+    params = {"base": base, "exponent": exponent}
+    response = requests.get("http://127.0.0.1:8000/pow", params=params, headers=get_auth_headers())
     if response.status_code == 200:
         click.echo(response.json())
     else:

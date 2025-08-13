@@ -1,17 +1,21 @@
-# Base image with Python
 FROM python:3.11-slim
 
-# Set working directory
+# system dependencies for Kafka and oracledb
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    librdkafka-dev \
+    libaio-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy project files
 COPY . .
 
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port used by FastAPI
+# FastAPI port
 EXPOSE 8000
 
-# Start the FastAPI app
+# running Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

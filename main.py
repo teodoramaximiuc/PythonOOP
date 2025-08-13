@@ -1,20 +1,33 @@
+from Logistic_Regression_Model import LogisticRegressionModel
+from Math_Functions import MathFunctions
 from fastapi import FastAPI
 from fastapi import HTTPException
 from pydantic import BaseModel
-app = FastAPI()
-from Logistic_Regression_Model import LogisticRegressionModel
-from Math_Functions import MathFunctions
-import numpy as np
-import oracledb
+from confluent_kafka import Producer
+from fastapi import Header, Depends
 from jose import jwt
 from datetime import datetime, timedelta
+import numpy as np
+import oracledb
 import os
+import json
+
+app = FastAPI()
+
+producer = Producer({
+    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+})
 
 conn = oracledb.connect(
-    user="C##teo",
-    password="parola123",
-    dsn="localhost:1521/xe"
+    user=os.getenv("ORACLE_USER"),
+    password=os.getenv("ORACLE_PASSWORD"),
+    dsn=os.getenv("ORACLE_DSN")
 )
+
+def log_event_to_stream(event):
+    producer.produce('cliusers_audit', json.dumps(event).encode('utf-8'))
+    producer.flush()
+
 cur = conn.cursor()
 items = []
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -33,12 +46,11 @@ class User(BaseModel):
     name: str
     password: str
 
-from fastapi import Header, Depends
-
 def get_current_user(authorization: str = Header(...)):
-    if not authorization.startswith("Bearer "):
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(status_code=401, detail="Invalid token header")
-    token = authorization.split(" ")[1]
+    token = parts[1].strip()
     payload = verify_token(token)
     return payload["sub"]
 
@@ -53,8 +65,18 @@ def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except jwt.ExpiredSignatureError:
+        print("[AUTH ERROR] Token expired")
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.JWTClaimsError as e:
+        print(f"[AUTH ERROR] Invalid claims: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Invalid claims: {str(e)}")
+    except jwt.JWTError as e:
+        print(f"[AUTH ERROR] Invalid token: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Invalid token!: {str(e)}")
+    except Exception as e:
+        print(f"[AUTH ERROR] Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal authentication error")
     
 def hash_password(password: str):
     import hashlib
@@ -66,21 +88,34 @@ def verify_password(plain_password: str, hashed_password: str):
 def save_action(current_user: str, action: str):
     cur.execute("SELECT NVL(MAX(id), 0) + 1 FROM cliusers_audit")
     new_id = cur.fetchone()[0]
+
     cur.execute("SELECT id FROM cliusers WHERE username = :username", {"username": current_user})
-    userid = cur.fetchone()[0]
-    if not userid:
+    row = cur.fetchone()
+    if not row:
         raise HTTPException(status_code=404, detail="User not found")
-    cur.execute("INSERT INTO cliusers_audit (id, userid, action, action_time) VALUES (:id, :userid, :action, SYSDATE)",
-                {"id": new_id, "userid": userid, "action": action})
+    userid = row[0]
+
+    cur.execute(
+        "INSERT INTO cliusers_audit (id, userid, action, action_time) "
+        "VALUES (:id, :userid, :action, SYSDATE)",
+        {"id": new_id, "userid": userid, "action": action}
+    )
     conn.commit()
+
+    event = {"user": current_user, "action": action, "timestamp": datetime.utcnow().isoformat()}
+    log_event_to_stream(event)
 
 @app.get("/n-th_fibonacci/{n}")
 async def nth_fibonacci(n: int, current_user: str = Depends(get_current_user)):
     save_action(current_user, "n-th_fibonacci")
     return {"n-th_fibonacci": MathFunctions().nth_fibbonaci(n)}
 
-@app.get("/pow/base={base}&exponent={exponent}")
-async def pow(base: float, exponent: float, current_user: str = Depends(get_current_user)):
+@app.get("/me")
+async def me(current_user: str = Depends(get_current_user)):
+    return {"user": current_user}
+
+@app.get("/pow")
+async def pow_q(base: float, exponent: float, current_user: str = Depends(get_current_user)):
     save_action(current_user, "pow")
     return {"pow": MathFunctions().pow(base, exponent)}
 @app.get("/factorial/{n}")
@@ -92,20 +127,16 @@ async def factorial(n: int, current_user: str = Depends(get_current_user)):
     return {"factorial": result}
 @app.post("/login")
 async def login(user: User):
-    cur.execute("SELECT * FROM cliusers WHERE username = :username",
-               {"username": user.name}
-    )
+    cur.execute("SELECT * FROM cliusers WHERE username = :username", {"username": user.name})
     row = cur.fetchone()
-    if row:
-        print("DB password:", row[2])
-        print("Input password:", user.password)
-        print("Input hashed:", hash_password(user.password))
-        if verify_password(user.password, row[2]):
-            expire = datetime.utcnow() + timedelta(minutes=30)
-            token = jwt.encode({"sub": user.name, "exp": expire}, SECRET_KEY, algorithm=ALGORITHM)
-            return Token(access_token=token, token_type="bearer")
-    else:
+    if not row:
         raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    if verify_password(user.password, row[2]):
+        expire = datetime.utcnow() + timedelta(minutes=30)
+        token = jwt.encode({"sub": user.name, "exp": expire}, SECRET_KEY, algorithm=ALGORITHM)
+        return Token(access_token=token, token_type="bearer")
+    raise HTTPException(status_code=401, detail="Invalid username or password")
 @app.post("/signup")
 async def signup(user: User):
     cur.execute("SELECT * FROM cliusers WHERE username = :username", {"username": user.name})

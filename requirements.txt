@@ -2,4 +2,5 @@ fastapi
 uvicorn
 oracledb
 python-jose
+confluent-kafka
 numpy
