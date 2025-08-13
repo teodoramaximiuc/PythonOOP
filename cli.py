@@ -35,6 +35,12 @@ def read_file(file):
 @click.command()
 @click.argument('fibonacci_number', type=int)
 def fibonacci(fibonacci_number):
+    if fibonacci_number < 0:
+        click.echo("Error: Fibonacci number must be a non-negative integer.")
+        sys.exit(1)
+    if fibonacci_number > 100:
+        click.echo("Error: Fibonacci number is too large (max 100).")
+        sys.exit(1)
     response = requests.get(f"http://127.0.0.1:8000/n-th_fibonacci/{fibonacci_number}", headers=get_auth_headers())
     if response.status_code == 200:
         click.echo(response.json())
@@ -45,6 +51,9 @@ def fibonacci(fibonacci_number):
 @click.argument('base', type=float)
 @click.argument('exponent', type=float)
 def pow(base, exponent):
+    if base > 100 or exponent > 100:
+        click.echo("Error: Base and exponent must be less than or equal to 100.")
+        sys.exit(1)
     response = requests.get(f"http://127.0.0.1:8000/pow/base={base}&exponent={exponent}", headers=get_auth_headers())
     if response.status_code == 200:
         click.echo(response.json())
@@ -54,6 +63,12 @@ def pow(base, exponent):
 @click.command()
 @click.argument('number', type=int)
 def factorial(number):
+    if number < 0:
+        click.echo("Error: Factorial number must be a non-negative integer.")
+        sys.exit(1)
+    if number > 40:
+        click.echo("Error: Factorial number is too large (max 40).")
+        sys.exit(1)
     response = requests.get(f"http://127.0.0.1:8000/factorial/{number}", headers=get_auth_headers())
     if response.status_code == 200:
         click.echo(response.json())
